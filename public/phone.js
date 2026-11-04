@@ -11,6 +11,8 @@
   let savedRoom = null;
   try { savedRoom = localStorage.getItem('phone_last_room'); } catch (e) {}
   let ROOM_ID = paramRoom || savedRoom || 'MAIN';
+  function updateRompLinks() { const lp = document.getElementById('link-play-romp-phone'); if (lp) lp.href = /romp/?room=&cast=1; const tr = document.getElementById('tab-romp'); if (tr) tr.href = /romp/?room=&cast=1; }
+  setTimeout(updateRompLinks, 500);
 
   // DOM Elements
   const bulb = document.getElementById('bulb');
@@ -224,7 +226,7 @@
           vibrate(msg.duration || 60);
         } else if (msg.type === 'peer_status') {
           if (msg.roomId) {
-            ROOM_ID = msg.roomId;
+            ROOM_ID = msg.roomId; updateRompLinks();
             try { localStorage.setItem('phone_last_room', msg.roomId); } catch (e) {}
           }
           if (msg.tvConnected) {
@@ -233,7 +235,7 @@
           }
         } else if (msg.type === 'registered') {
           if (msg.roomId) {
-            ROOM_ID = msg.roomId;
+            ROOM_ID = msg.roomId; updateRompLinks();
             try { localStorage.setItem('phone_last_room', msg.roomId); } catch (e) {}
           }
           if (msg.tunnelUrl && window.location.protocol !== 'https:') {

@@ -1252,14 +1252,14 @@
   if (rompHeaderBtn) {
     rompHeaderBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.href = '/romp/';
+      window.location.href = `/romp-tv?room=${ROOM_ID}`;
     });
   }
   const rompLobbyBtn = document.getElementById('btn-launch-romp-lobby');
   if (rompLobbyBtn) {
     rompLobbyBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.href = '/romp/';
+      window.location.href = `/romp-tv?room=${ROOM_ID}`;
     });
   }
 

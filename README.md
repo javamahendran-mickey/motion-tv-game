@@ -30,9 +30,11 @@ Play classic **Super Mario Bros World 1-1** using your actual body movements:
 * **Forge** — Hold deep squats to heat glowing blades; strike up hard when white hot.
 * **Lumberjack** — Wind up high and chop down diagonally across your body to split logs.
 * **Smash**, **Goalie**, **Jab**, **Beat**, **Rocket**, **Freeze**, **Wipe**, **Shape Up**.
-* **Dual Play Options**:
-  * **Option A (TV Direct)**: Plays full-screen on TV via `/romp-tv`, receiving pose data injected into `globalThis.__romp.players` from your phone.
-  * **Option B (Phone Cast)**: Run ROMP directly on mobile at 60 FPS and cast full screen to the TV using Google Cast / Miracast.
+* **Casting & Playback Architecture**:
+  * **Why Casting is Used on Smart TVs**: ROMP's 3D engine (PlayCanvas 2.x) strictly requires **WebGL 2 (OpenGL ES 3.0)** for uniform buffer layouts (`layout(std140)`). Smart TVs with Mali-450 / Amlogic SoCs only support WebGL 1 (OpenGL ES 2.0); running PlayCanvas directly inside the TV's WebView results in an unsupported WebGL driver error (showing only the CSS blue background).
+  * **Option A: Built-in 1-Tap WebRTC Cast**: Open ROMP on your smartphone (`https://motion-tv-game.onrender.com/romp/`) and tap the glowing **"📺 Cast to TV"** button. The phone renders the 3D game and AI pose skeleton at 60 FPS and streams low-latency 1080p video directly to the TV receiver (`/romp-tv`).
+  * **Option B: Native Android Smart View / Google Cast**: Swipe down on your phone's notification shade, tap **"Smart View"** or **"Cast Screen"**, and choose your Thomson TV.
+  * **Option C: Native TV Games (Mario & Neon Strike)**: Super Mario (`/mario`) and Neon TV Arcade (`/tv`) use HTML5 Canvas 2D and run natively on the TV hardware at 60 FPS while being controlled remotely by your phone camera!
 
 ### 3. ⚔️ Neon Motion Strike (`/tv`)
 High-performance 60 FPS cyberpunk rhythm & dodge arcade:
