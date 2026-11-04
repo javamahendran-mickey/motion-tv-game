@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head><title>GL Test</title></head>
+<body>
+<div id="out" style="color:white;font-family:monospace;font-size:24px;background:#111;padding:20px;">Testing GL...</div>
+<script>
+  const out = document.getElementById('out');
+  const c = document.createElement('canvas');
+  const results = {};
+
+  ['webgl2', 'webgl', 'experimental-webgl'].forEach(type => {
+    try {
+      const gl = c.getContext(type);
+      if (gl) {
+        results[type] = {
+          supported: true,
+          renderer: gl.getParameter(gl.RENDERER),
+          vendor: gl.getParameter(gl.VENDOR),
+          version: gl.getParameter(gl.VERSION)
+        };
+      } else {
+        results[type] = { supported: false, error: 'returned null' };
+      }
+    } catch (e) {
+      results[type] = { supported: false, error: e.message };
+    }
+  });
+
+  out.innerHTML = '<pre>' + JSON.stringify(results, null, 2) + '</pre>';
+
+  // Send report back to server
+  fetch('/api/gl-report', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(results)
+  }).catch(() => {});
+</script>
+</body>
+</html>
+

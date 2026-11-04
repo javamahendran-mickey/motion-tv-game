@@ -1,0 +1,15 @@
+# ==============================================================================
+# IDEAS & FEATURE BACKLOG FOR MOTION TV GAME
+# ==============================================================================
+# You can write your ideas here! Each idea will be read by the Main Agent.
+# You can format ideas as bullet points, numbered items, or paragraph blocks.
+# The Main Agent will parse them, spawn subagents to implement, test, and verify!
+# ==============================================================================
+
+1. Add a High Score Leaderboard System with LocalStorage persistence and celebration fireworks when beating the top score.
+2. Add a Combo Sound Pitch Escalator where successive hits increase the pitch of the slice sound.
+3. Add a Kids Party Mode with a 60-second frenzy countdown timer and confetti explosions.
+4. Add a Shake-to-Boost emergency power-up for Kart and Space Rider games.
+5. Add an Audio BGM synthesizer that plays catchy arcade background melodies for each game mode.
+
+6. set wallpaper - I want to set the wallpaper in the smart tv with my kids photos in the background and in frontend menus should be present. this should be customised based on the requirement.

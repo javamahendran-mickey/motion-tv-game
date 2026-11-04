@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Motion Controller - Android</title>
+  <link rel="stylesheet" href="phone.css">
+
+  <!-- Google MediaPipe Pose & Camera CDN for High-Precision Skeletal Mode -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="controller-app">
+    <!-- Top Status Bar -->
+    <header class="controller-bar">
+      <div class="status-indicator">
+        <span class="status-bulb disconnected" id="bulb"></span>
+        <span id="status-label">CONNECTING...</span>
+      </div>
+      <div class="latency-badge" id="ping-badge">-- ms</div>
+    </header>
+
+    <!-- Mode Switcher Tabs -->
+    <nav class="mode-tabs">
+      <button class="tab-btn active" id="tab-handheld">
+        <span class="tab-icon">🗡️</span>
+        <span class="tab-text">Handheld Saber</span>
+      </button>
+      <button class="tab-btn" id="tab-body">
+        <span class="tab-icon">🧍</span>
+        <span class="tab-text">Body Camera Track</span>
+      </button>
+      <a class="tab-btn" id="tab-romp" href="/romp/" style="text-decoration: none; color: inherit;">
+        <span class="tab-icon">🕹️</span>
+        <span class="tab-text">Romp (17)</span>
+      </a>
+    </nav>
+
+    <!-- HTTPS Tunnel Notification Banner (Visible on HTTP or Insecure Contexts) -->
+    <div id="https-helper-banner" class="insecure-card" style="display: none;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+        <div>
+          <b style="color: #00ff88;">🔒 Switch to Secure HTTPS for Instant Camera Tracking:</b>
+          <p style="margin: 4px 0;">Chrome blocks phone cameras on HTTP. Tap below to switch to HTTPS with 1 click:</p>
+          <a id="https-switch-link" href="#" style="display: inline-block; background: #00f0ff; color: #000; padding: 6px 12px; border-radius: 6px; font-weight: bold; text-decoration: none; margin-top: 4px;">🚀 Open Secure HTTPS Controller</a>
+        </div>
+        <button id="btn-dismiss-banner" style="background: transparent; border: none; color: #aaa; font-size: 16px; cursor: pointer;">✕</button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: Handheld Motion Mode (IMU Sensors) -->
+    <section class="mode-view active" id="view-handheld">
+      <!-- Quick Game Selector for Kids (9 Modes) -->
+      <div class="game-select-bar">
+        <button class="game-pill-btn" data-game="mario">🍄 Mario</button>
+        <button class="game-pill-btn active" data-game="fruit">🍉 Fruit</button>
+        <button class="game-pill-btn" data-game="saber">⚡ Saber</button>
+        <button class="game-pill-btn" data-game="tennis">🎾 Tennis</button>
+        <button class="game-pill-btn" data-game="wizard">🧙‍♂️ Wizard</button>
+        <button class="game-pill-btn" data-game="balloon">🎈 Balloon</button>
+        <button class="game-pill-btn" data-game="kart">🏎️ Kart</button>
+        <button class="game-pill-btn" data-game="dodge">🚀 Galaxy</button>
+        <button class="game-pill-btn" data-game="boxing">👾 Monster</button>
+        <button class="game-pill-btn" data-game="soccer">⚽ Soccer</button>
+      </div>
+
+      <!-- 3D Phone Motion Orientation Visualizer -->
+      <div class="visualizer-container">
+        <div class="phone-mockup" id="phone-3d">
+          <div class="phone-screen">
+            <div class="saber-beam" id="saber-beam"></div>
+            <span class="motion-icon">⚡</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acceleration & Swing Meter -->
+      <div class="meter-panel">
+        <div class="meter-label">
+          <span>MOTION INTENSITY</span>
+          <span id="intensity-val">0.0 G</span>
+        </div>
+        <div class="meter-bar-track">
+          <div class="meter-bar-fill" id="intensity-fill"></div>
+        </div>
+      </div>
+
+      <!-- Primary Action Buttons -->
+      
+      <!-- Dedicated Super Mario Motion & Touch Control Pad -->
+      <div id="mario-touch-pad" style="display: none; flex-direction: column; gap: 10px; margin: 10px 14px 4px 14px;">
+        <div style="background: rgba(229, 37, 33, 0.2); border: 2px solid #fcbc00; border-radius: 12px; padding: 8px 12px; text-align: center;">
+          <div style="font-weight: 900; color: #fcbc00; font-size: 14px;">🍄 SUPER MARIO CONTROLLER</div>
+          <div style="font-size: 11px; color: #cbd5e1;">Tilt phone or hold buttons below to control Mario!</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button id="btn-mario-left" class="action-btn" style="background: #1a2030; border: 2px solid #00f0ff; color: #fff; font-size: 16px; font-weight: 900; padding: 18px 8px; border-radius: 12px; touch-action: manipulation;">
+            ◀️ RUN LEFT
+          </button>
+          <button id="btn-mario-right" class="action-btn" style="background: #1a2030; border: 2px solid #00f0ff; color: #fff; font-size: 16px; font-weight: 900; padding: 18px 8px; border-radius: 12px; touch-action: manipulation;">
+            RUN RIGHT ▶️
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px;">
+          <button id="btn-mario-jump" class="action-btn-green" style="background: linear-gradient(135deg, #00ff88, #00b4d8); font-size: 18px; font-weight: 900; padding: 20px 8px; border-radius: 12px; color: #000; box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4); touch-action: manipulation;">
+            🦘 JUMP!
+          </button>
+          <button id="btn-mario-fire" class="action-btn" style="background: linear-gradient(135deg, #ff3d6e, #e52521); font-size: 15px; font-weight: 900; padding: 20px 8px; border-radius: 12px; color: #fff; box-shadow: 0 4px 15px rgba(229, 37, 33, 0.4); touch-action: manipulation;">
+            🔥 FIREBALL
+          </button>
+        </div>
+      </div>
+
+      <div class="controls-area">
+        <button class="action-btn-green" id="btn-start-tv" style="margin-bottom: 6px;">
+          ▶️ START GAME ON TV
+        </button>
+
+        <button class="big-action-btn" id="btn-strike">
+          <span class="btn-glow"></span>
+          <span class="btn-text">SWING / STRIKE</span>
+          <span class="btn-subtext">(Or swing your phone physically!)</span>
+        </button>
+
+        <div class="secondary-btns">
+          <button class="aux-btn" id="btn-calibrate">🎯 RE-CENTER GYRO</button>
+          <button class="aux-btn" id="btn-invert-dir">↔️ STEER: NORMAL</button>
+          <button class="aux-btn" id="btn-permission">⚙️ ACTIVATE SENSORS</button>
+        </div>
+      </div>
+
+      <!-- Live Sensor Diagnostics Bar -->
+      <div class="sensor-diagnostics" id="sensor-diag">
+        <span>📡 Tilt: <b id="diag-tilt">0°</b></span>
+        <span>⚡ G-Force: <b id="diag-g">1.0G</b></span>
+        <span>📦 Sent: <b id="diag-packets">0</b></span>
+      </div>
+
+      <!-- Instructions Hint -->
+      <div class="instructions-footer">
+        <p>💡 Tap <b>ACTIVATE SENSORS</b> if asked. Tilt your phone left/right to steer, and swing firmly to slash!</p>
+      </div>
+    </section>
+
+    <!-- VIEW 2: Optical Full-Body Camera Tracking Mode -->
+    <section class="mode-view" id="view-body">
+      <!-- Game Selector Bar in Body Mode -->
+      <div class="game-select-bar">
+        <button class="game-pill-btn" data-game="mario">🍄 Mario</button>
+        <button class="game-pill-btn active" data-game="fruit">🍉 Fruit</button>
+        <button class="game-pill-btn" data-game="saber">⚡ Saber</button>
+        <button class="game-pill-btn" data-game="tennis">🎾 Tennis</button>
+        <button class="game-pill-btn" data-game="wizard">🧙‍♂️ Wizard</button>
+        <button class="game-pill-btn" data-game="balloon">🎈 Balloon</button>
+        <button class="game-pill-btn" data-game="kart">🏎️ Kart</button>
+        <button class="game-pill-btn" data-game="dodge">🚀 Galaxy</button>
+        <button class="game-pill-btn" data-game="boxing">👾 Monster</button>
+        <button class="game-pill-btn" data-game="soccer">⚽ Soccer</button>
+      </div>
+
+      <div class="camera-wrapper">
+        <video id="webcam-feed" playsinline muted autoplay></video>
+        <canvas id="pose-canvas"></canvas>
+
+        <!-- Tap to Activate Camera Overlay -->
+        <div id="camera-tap-prompt" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(10, 14, 26, 0.92); z-index: 10; border-radius: 12px; cursor: pointer; text-align: center; padding: 20px;">
+          <span style="font-size: 52px; margin-bottom: 8px;">🧍</span>
+          <h3 style="color: #00ff88; font-size: 18px; margin-bottom: 6px; font-weight: 900;">TAP TO START BODY CAMERA</h3>
+          <p style="color: #cbd5e1; font-size: 13px; max-width: 280px; margin-bottom: 16px;">Step back 2 meters. Lean left/right to run, raise arms to jump!</p>
+          <button id="btn-big-activate" style="background: linear-gradient(135deg, #00ff88, #00b4d8); border: none; font-size: 16px; font-weight: 900; color: #000; padding: 14px 28px; border-radius: 30px; box-shadow: 0 0 25px rgba(0,255,136,0.6); pointer-events: none;">
+            ▶️ ACTIVATE CAMERA NOW
+          </button>
+        </div>
+
+
+        <div class="camera-overlay-info" id="pose-status-card">
+          <span class="pose-badge" id="pose-badge">CAMERA READY</span>
+          <p id="pose-tip">Prop phone upright facing you (2–3m away). Move left/right to dodge, punch to attack!</p>
+        </div>
+      </div>
+
+      <div class="camera-controls" style="display: flex; flex-direction: column; gap: 8px; margin: 10px 14px 4px 14px;">
+        <button class="action-btn-green" id="btn-start-tv-body">
+          ▶️ START GAME ON TV
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button class="action-btn-green" id="btn-toggle-camera" style="flex: 2;">
+            📹 START BODY CAMERA
+          </button>
+          <button class="aux-btn" id="btn-flip-camera" style="flex: 1; padding: 10px;">
+            🔄 FLIP CAM
+          </button>
+          <button class="aux-btn" id="btn-invert-body" style="flex: 1; padding: 10px;">
+            ↔️ MIRROR
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Real-time Lane & Action HUD on Phone -->
+      <div id="phone-motion-hud" style="display: flex; justify-content: space-between; align-items: center; background: #0f1320; border: 2px solid #334155; border-radius: 12px; padding: 10px 14px; margin: 6px 14px;">
+        <div id="hud-lane-left" style="flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-weight: 900; color: #64748b; font-size: 13px; transition: all 0.1s ease;">◀️ RUN LEFT</div>
+        <div id="hud-lane-center" style="flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-weight: 900; color: #00f0ff; font-size: 13px; background: rgba(0, 240, 255, 0.2); transition: all 0.1s ease;">🧍 STOP</div>
+        <div id="hud-lane-right" style="flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-weight: 900; color: #64748b; font-size: 13px; transition: all 0.1s ease;">RUN RIGHT ▶️</div>
+      </div>
+      <div id="phone-action-feedback" style="display: flex; gap: 8px; margin: 4px 14px;">
+        <div id="hud-action-jump" style="flex: 1; text-align: center; padding: 10px; border-radius: 8px; font-weight: 900; color: #64748b; background: #1e293b; font-size: 14px; transition: all 0.1s ease;">🦘 JUMP (ARMS UP)</div>
+        <div id="hud-action-fire" style="flex: 1; text-align: center; padding: 10px; border-radius: 8px; font-weight: 900; color: #64748b; background: #1e293b; font-size: 14px; transition: all 0.1s ease;">🔥 FIREBALL (PUNCH)</div>
+      </div>
+
+
+      <!-- Real-Time Motion Energy Meter -->
+      <div style="margin: 4px 14px; background: #0b0e17; border: 1px solid #1e293b; border-radius: 8px; padding: 6px 12px; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 11px; font-weight: 800; color: #94a3b8; white-space: nowrap;">BODY MOTION:</span>
+        <div style="flex: 1; height: 10px; background: #1e293b; border-radius: 5px; overflow: hidden; position: relative;">
+          <div id="body-energy-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #00ff88, #00b4d8, #ff3366); transition: width 0.05s ease;"></div>
+        </div>
+        <span id="body-energy-val" style="font-size: 11px; font-weight: 900; color: #00ff88; min-width: 32px; text-align: right;">0</span>
+      </div>
+
+      <!-- Direct Mario Touch Gamepad (Available right on Body Camera Screen) -->
+      <div id="mario-body-touch-pad" style="display: none; flex-direction: column; gap: 8px; margin: 8px 14px 4px 14px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button id="btn-body-mario-left" class="action-btn" style="background: #1a2030; border: 2px solid #00f0ff; color: #fff; font-size: 15px; font-weight: 900; padding: 14px 8px; border-radius: 10px; touch-action: manipulation;">
+            ◀️ RUN LEFT
+          </button>
+          <button id="btn-body-mario-right" class="action-btn" style="background: #1a2030; border: 2px solid #00f0ff; color: #fff; font-size: 15px; font-weight: 900; padding: 14px 8px; border-radius: 10px; touch-action: manipulation;">
+            RUN RIGHT ▶️
+          </button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px;">
+          <button id="btn-body-mario-jump" class="action-btn-green" style="background: linear-gradient(135deg, #00ff88, #00b4d8); font-size: 16px; font-weight: 900; padding: 16px 8px; border-radius: 10px; color: #000; box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4); touch-action: manipulation;">
+            🦘 JUMP!
+          </button>
+          <button id="btn-body-mario-fire" class="action-btn" style="background: linear-gradient(135deg, #ff3d6e, #e52521); font-size: 14px; font-weight: 900; padding: 16px 8px; border-radius: 10px; color: #fff; box-shadow: 0 4px 15px rgba(229, 37, 33, 0.4); touch-action: manipulation;">
+            🔥 FIREBALL
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Body Tracking Diagnostics -->
+      <div class="sensor-diagnostics" id="body-diag" style="margin: 4px 14px;">
+        <span>🧍 Body: <b id="diag-body-x">Center</b></span>
+        <span>🥊 Punch: <b id="diag-body-punch">Idle</b></span>
+        <span>⚙️ Engine: <b id="diag-body-engine">Optical Flow</b></span>
+      </div>
+
+      <div class="instructions-footer">
+        <p>💡 Step back till upper body is in view. Step left/right to steer. Punch or slash to hit targets!</p>
+      </div>
+    </section>
+    <!-- Romp Launcher Modal -->
+    <div id="romp-modal" style="display: none; position: fixed; inset: 0; background: rgba(10, 12, 20, 0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center;">
+      <div style="background: #141724; border: 2px solid #ff3d6e; border-radius: 16px; padding: 24px; max-width: 380px; width: 100%; box-shadow: 0 0 30px rgba(255, 61, 110, 0.3);">
+        <h2 style="font-size: 1.4rem; color: #fff; margin-bottom: 8px;">🌟 ROMP MOTION ARENA</h2>
+        <p style="color: #8391a8; font-size: 0.85rem; margin-bottom: 20px;">17 Camera-Tracked Games: Slice, Run, Jab, Goalie, Jacks, Lumber, Keepy-Uppy and more!</p>
+        <button id="btn-launch-romp-tv" class="action-btn-green" style="width: 100%; margin-bottom: 12px; background: linear-gradient(135deg, #ff3d6e, #7c3aed); box-shadow: 0 4px 15px rgba(255, 61, 110, 0.4);">
+          📺 LAUNCH ROMP ON TV SCREEN
+        </button>
+        <a id="link-play-romp-phone" href="/romp/" class="aux-btn" style="display: block; width: 100%; padding: 12px; margin-bottom: 12px; text-decoration: none; color: #00f0ff; border-color: #00f0ff;">
+          📱 PLAY ON THIS PHONE (FRONT CAM)
+        </a>
+        <button id="btn-close-romp-modal" class="aux-btn" style="width: 100%; padding: 10px;">
+          CANCEL
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="phone.js"></script>
+</body>
+</html>

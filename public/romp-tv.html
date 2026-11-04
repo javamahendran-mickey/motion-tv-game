@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>ROMP on TV</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100vw; height: 100vh;
+      background: #000;
+      overflow: hidden;
+      font-family: monospace;
+    }
+    #romp-frame {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      position: absolute;
+      top: 0; left: 0;
+    }
+    /* HUD overlay — shown briefly then fades */
+    #hud {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: rgba(0,0,0,0.75);
+      border: 1.5px solid #00ff88;
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #00ff88;
+      font-size: 13px;
+      z-index: 999;
+      transition: opacity 1s;
+      pointer-events: none;
+    }
+    #hud.hidden { opacity: 0; }
+    #pose-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #555; margin-right: 6px; vertical-align: middle; }
+    #pose-dot.live { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+    /* Phone-controller banner at bottom */
+    #ctrl-banner {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+      color: #aaa;
+      font-size: 12px;
+      padding: 18px 20px 10px;
+      text-align: center;
+      z-index: 998;
+      pointer-events: none;
+      transition: opacity 2s;
+    }
+    #ctrl-banner.hidden { opacity: 0; }
+    #ctrl-banner a { color: #00ff88; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <iframe id="romp-frame" src="/romp/?sim" allow="camera;microphone;fullscreen"></iframe>
+  <div id="hud">
+    <span id="pose-dot"></span>
+    <span id="hud-status">Waiting for phone…</span>
+  </div>
+  <div id="ctrl-banner" id="ctrl-banner">
+    📱 Control ROMP with your phone camera &mdash; open the phone link on TV lobby screen
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ── Room setup ────────────────────────────────────────────────────────────
+      let storedRoom = null;
+      try { storedRoom = localStorage.getItem('tv_arcade_room'); } catch (e) {}
+      const params = new URLSearchParams(location.search);
+      const ROOM_ID = params.get('room') || storedRoom || 'TV-5048';
+
+      const frame    = document.getElementById('romp-frame');
+      const poseDot  = document.getElementById('pose-dot');
+      const hudStatus = document.getElementById('hud-status');
+      const hud      = document.getElementById('hud');
+      const banner   = document.getElementById('ctrl-banner');
+
+      // ── Auto-hide HUD after 6 s ───────────────────────────────────────────────
+      let hudTimeout = setTimeout(() => { hud.classList.add('hidden'); banner.classList.add('hidden'); }, 6000);
+      function showHud(text) {
+        clearTimeout(hudTimeout);
+        hud.classList.remove('hidden');
+        banner.classList.remove('hidden');
+        hudStatus.textContent = text;
+        hudTimeout = setTimeout(() => { hud.classList.add('hidden'); banner.classList.add('hidden'); }, 5000);
+      }
+
+      // ── WebSocket ─────────────────────────────────────────────────────────────
+      let ws, reconnectTimer;
+      let rompReady = false;
+      let poseQueue = []; // buffer messages until ROMP iframe says it's ready
+
+      // We detect ROMP readiness by polling __romp in the iframe
+      function pollRompReady() {
+        try {
+          const win = frame.contentWindow;
+          if (win && win.__romp && win.__romp.players) {
+            rompReady = true;
+            console.log('[ROMP-TV] ROMP players API available');
+            // Flush queue
+            for (const msg of poseQueue) injectPose(msg);
+            poseQueue = [];
+            return;
+          }
+        } catch (e) { /* cross-origin guard — same-origin so usually fine */ }
+        setTimeout(pollRompReady, 300);
+      }
+
+      frame.addEventListener('load', () => {
+        rompReady = false;
+        poseQueue = [];
+        setTimeout(pollRompReady, 800);
+      });
+
+      // ── Pose injection into ROMP's __romp.players ────────────────────────────
+      // ROMP exposes `globalThis.__romp.players` — an array of two Player objects.
+      // We write the computed values directly so ROMP games see live body data
+      // without needing ROMP's own camera.
+      function injectPose(msg) {
+        try {
+          const win = frame.contentWindow;
+          if (!win || !win.__romp) return;
+          const p = win.__romp.players[0];
+          if (!p) return;
+
+          // ── landmarks ─────────────────────────────────────────────────
+          // msg.landmarks = array of {x,y,z,visibility} from MediaPipe (phone)
+          const lm = msg.landmarks; // 33 points
+
+          if (lm && lm.length >= 29) {
+            const aspect = 16 / 9;
+            // Mirror x (TV = mirror)
+            const mx = (pt) => (1 - pt.x) * aspect;
+            const seen = (pt) => (pt.visibility === undefined || pt.visibility >= 0.5);
+
+            // Body frame (shoulders)
+            const ls = lm[11], rs = lm[12];
+            const frameX = (mx(ls) + mx(rs)) / 2;
+            const frameY = (ls.y + rs.y) / 2;
+            const frameSW = Math.hypot(mx(ls) - mx(rs), ls.y - rs.y) || 0.1;
+
+            p.present = true;
+            p.frame = { x: frameX, y: frameY, sw: frameSW, aspect };
+
+            // body array [mirroredX, y, visibility]
+            p.body = lm.map(q => [1 - q.x, q.y, q.visibility === undefined ? 1 : q.visibility]);
+
+            // hands: [screen-left wrist, screen-right wrist]
+            // screen-left = higher raw x (before mirroring)
+            const lw = lm[15], rw = lm[16]; // MediaPipe: left=15 screen-right, right=16 screen-left after mirror
+            // After mirroring: lm[15] was at raw x→ screen mirrored position
+            // ROMP: hands[0]=screen-left, hands[1]=screen-right
+            const hx = (pt, f) => Math.max(-1, Math.min(1, (mx(pt) - f.x) / f.sw / 1.5));
+            const hy = (pt, f) => Math.max(-1, Math.min(1, ((f.y - pt.y) / f.sw - 0.2) / 1.4));
+            const f = p.frame;
+            const now = performance.now();
+            if (seen(lw)) p.hands[0] = { x: hx(lw, f), y: hy(lw, f), vx: 0, vy: 0, ax: 0, ay: 0, seen: true, t: now };
+            if (seen(rw)) p.hands[1] = { x: hx(rw, f), y: hy(rw, f), vx: 0, vy: 0, ax: 0, ay: 0, seen: true, t: now };
+
+            // lift (jump/crouch)
+            const hipY = (lm[23].y + lm[24].y) / 2;
+            const torsoLen = Math.abs(frameY - hipY);
+            const standY = win.__rompStandY !== undefined ? win.__rompStandY : frameY;
+            if (!win.__rompStandY || Math.abs(frameY - standY) < 0.05) win.__rompStandY = frameY;
+            p.lift = (standY - frameY) / (frameSW || 0.1);
+            p.liftV = msg.liftV || 0;
+
+            // steer: lean + side-step
+            const leanX = (mx(ls) + mx(rs)) / 2 - (mx(lm[23]) + mx(lm[24])) / 2;
+            p.lean = leanX / (frameSW || 0.1);
+            p.steer = Math.max(-1, Math.min(1, p.lean / 0.45));
+
+            // energy
+            p.energy = msg.energy || 0;
+
+            // rig (body-relative landmarks)
+            p.rig = lm.map(q => {
+              const rx = (mx(q) - f.x) / f.sw;
+              const ry = (f.y - q.y) / f.sw;
+              return [rx, ry, q.visibility === undefined ? 1 : q.visibility, 0, 0];
+            });
+
+            // limb angles
+            const LIMBS = [[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];
+            p.angles = LIMBS.map(([a,b]) => Math.atan2(lm[a].y - lm[b].y, mx(lm[b]) - mx(lm[a])));
+          } else if (msg.bodyX !== undefined) {
+            // Fallback: simple bodyX/lane data only (no landmarks)
+            p.present = true;
+            const bx = msg.bodyX !== undefined ? msg.bodyX : 0.5;
+            p.steer = Math.max(-1, Math.min(1, (bx - 0.5) * 4));
+            p.lift = msg.jump ? 0.5 : (msg.isDucking ? -0.7 : 0);
+            p.liftV = msg.jump ? 2 : 0;
+            p.energy = 0.5;
+          }
+        } catch (e) {
+          console.warn('[ROMP-TV] inject error', e.message);
+        }
+      }
+
+      // ── WebSocket connection ───────────────────────────────────────────────────
+      function connect() {
+        clearTimeout(reconnectTimer);
+        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(`${proto}//${location.host}`);
+
+        ws.addEventListener('open', () => {
+          ws.send(JSON.stringify({ type: 'register', role: 'romp_tv', roomId: ROOM_ID }));
+          showHud('📡 Connected — waiting for phone…');
+        });
+
+        ws.addEventListener('message', (e) => {
+          try {
+            const msg = JSON.parse(e.data);
+
+            // Peer status
+            if (msg.type === 'peer_status') {
+              if (msg.phoneConnected) showHud('📱 Phone controller connected!');
+              return;
+            }
+
+            // Landmark pose from phone
+            if (msg.type === 'pose' || msg.type === 'landmarks') {
+              poseDot.classList.add('live');
+              if (rompReady) {
+                injectPose(msg);
+              } else {
+                poseQueue.push(msg);
+                if (poseQueue.length > 10) poseQueue.shift();
+              }
+              return;
+            }
+
+            // Navigate back to main TV if phone switches game
+            if (msg.type === 'switch_to_mario') {
+              window.location.href = '/tv';
+              return;
+            }
+
+            // Relay gamepad-style key events into ROMP if needed
+            if (msg.type === 'key_press' || msg.type === 'key_release') {
+              try {
+                frame.contentWindow.dispatchEvent(new KeyboardEvent(
+                  msg.type === 'key_press' ? 'keydown' : 'keyup',
+                  { key: mapKey(msg.key), code: mapKey(msg.key), bubbles: true }
+                ));
+              } catch (e) {}
+              return;
+            }
+          } catch (err) {}
+        });
+
+        ws.addEventListener('close', () => {
+          poseDot.classList.remove('live');
+          showHud('⚠️ Disconnected — reconnecting…');
+          reconnectTimer = setTimeout(connect, 2000);
+        });
+
+        ws.addEventListener('error', () => { ws.close(); });
+      }
+
+      function mapKey(k) {
+        const MAP = { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', duck: 'ArrowDown', fire: 'Space' };
+        return MAP[k] || k;
+      }
+
+      connect();
+    })();
+  </script>
+</body>
+</html>
+

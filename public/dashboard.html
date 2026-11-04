@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Main Agent Mission Control - Feature Orchestrator & Working State Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <div class="logo-badge">
+          <span class="pulse-indicator"></span>
+          <span class="bot-icon">🤖</span>
+        </div>
+        <div>
+          <h1 class="header-title">MAIN AGENT ORCHESTRATOR</h1>
+          <p class="header-subtitle">Idea-to-Implementation Engine & Live Subagent Fleet Tracker</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="/tv" target="_blank" class="nav-link-btn">📺 Open TV Game</a>
+        <a href="/phone" target="_blank" class="nav-link-btn">📱 Open Phone</a>
+        <a href="/romp" target="_blank" class="nav-link-btn">🕹️ Open Romp Games</a>
+        <button class="primary-btn-cyan" id="btn-run-all">▶️ RUN ALL IDEAS</button>
+        <button class="primary-btn-magenta" id="btn-new-idea">➕ ADD IDEA</button>
+        <button class="danger-btn" id="btn-terminate-all">🛑 TERMINATE ALL AGENTS</button>
+      </div>
+    </header>
+
+    <!-- Top Key Metrics Cards -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">TOTAL IDEAS IN BACKLOG</span>
+          <span class="metric-icon">📋</span>
+        </div>
+        <div class="metric-value" id="stat-total-ideas">0</div>
+        <div class="metric-subtext">Sourced live from <code>ideas.txt</code></div>
+      </div>
+
+      <div class="metric-card active-card">
+        <div class="metric-header">
+          <span class="metric-label">ACTIVE SUBAGENTS FLEET</span>
+          <span class="metric-icon">🤖</span>
+        </div>
+        <div class="metric-value glow-cyan" id="stat-active-agents">0 / 4</div>
+        <div class="metric-subtext">Autonomous worker agents running</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">IMPLEMENTED & VERIFIED</span>
+          <span class="metric-icon">✅</span>
+        </div>
+        <div class="metric-value glow-green" id="stat-completed-ideas">0</div>
+        <div class="metric-subtext">Features verified in codebase</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">SYSTEM HEALTH & SYNTAX</span>
+          <span class="metric-icon">🛡️</span>
+        </div>
+        <div class="metric-value glow-gold" id="stat-system-health">100% HEALTHY</div>
+        <div class="metric-subtext">Syntax, lint & runtime tests</div>
+      </div>
+    </section>
+
+    <!-- Main 2-Column Work Area -->
+    <main class="dashboard-body">
+      <!-- Left Column: Active Subagents & Functionality Matrix -->
+      <section class="body-col left-col">
+        <!-- Subagent Fleet Monitor -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title-area">
+              <span class="panel-icon">⚡</span>
+              <h2>ACTIVE SUBAGENTS FLEET</h2>
+            </div>
+            <span class="badge" id="badge-agent-count">0 RUNNING</span>
+          </div>
+          <div class="panel-content" id="agents-fleet-container">
+            <div class="empty-placeholder">
+              <span class="placeholder-icon">💤</span>
+              <p>No subagents running currently. Click <b>"Spawn Agent"</b> on any idea or <b>"RUN ALL IDEAS"</b> to mobilize workers!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Functionality Working State & Verification Matrix -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title-area">
+              <span class="panel-icon">🔬</span>
+              <h2>FUNCTIONALITY WORKING STATE & TEST MATRIX</h2>
+            </div>
+            <button class="mini-btn" id="btn-retest-all">🔄 Retest All Features</button>
+          </div>
+          <div class="panel-content">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Feature / Idea</th>
+                    <th>Working State</th>
+                    <th>Progress</th>
+                    <th>Assigned Agent</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="functionality-table-body">
+                  <!-- Dynamically Rendered -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Ideas Backlog & Live Agent Terminal -->
+      <section class="body-col right-col">
+        <!-- Ideas Backlog -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title-area">
+              <span class="panel-icon">💡</span>
+              <h2>IDEAS BACKLOG (ideas.txt)</h2>
+            </div>
+            <div class="panel-actions">
+              <button class="mini-btn" id="btn-edit-ideas-file">📝 Edit File</button>
+              <button class="mini-btn-cyan" id="btn-reload-ideas">🔄 Reload</button>
+            </div>
+          </div>
+          <div class="panel-content">
+            <div class="ideas-list" id="ideas-list-container">
+              <!-- Dynamically Rendered -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Agent Terminal / Activity Stream -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title-area">
+              <span class="panel-icon">🖥️</span>
+              <h2>LIVE AGENT REASONING & ACTIVITY LOGS</h2>
+            </div>
+            <button class="mini-btn" id="btn-clear-logs">Clear Logs</button>
+          </div>
+          <div class="panel-content terminal-panel">
+            <div class="terminal-feed" id="terminal-feed">
+              <!-- Logs stream here -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL: Add New Idea -->
+  <div class="modal-overlay" id="modal-add-idea">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>➕ Add New Feature Idea</h3>
+        <button class="close-modal-btn" id="btn-close-add-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label for="idea-title-input">Idea Title / Summary:</label>
+        <input type="text" id="idea-title-input" placeholder="e.g. Add Slow-Motion Matrix Power-Up on 10x Combo" class="form-input">
+
+        <label for="idea-desc-input" style="margin-top: 12px;">Detailed Requirements / Behavior (Optional):</label>
+        <textarea id="idea-desc-input" rows="4" placeholder="Describe how it works, visual effects, sound triggers, etc." class="form-textarea"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="aux-btn" id="btn-cancel-add">Cancel</button>
+        <button class="primary-btn-cyan" id="btn-submit-idea">Add to ideas.txt & Dispatch</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Direct Edit ideas.txt -->
+  <div class="modal-overlay" id="modal-edit-ideas">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <h3>📝 Direct Edit: ideas.txt</h3>
+        <button class="close-modal-btn" id="btn-close-edit-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-tip">Edit the text file directly. Each numbered item or bullet will be automatically parsed into tasks.</p>
+        <textarea id="ideas-raw-textarea" class="form-textarea code-editor" rows="14"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="aux-btn" id="btn-cancel-edit">Cancel</button>
+        <button class="primary-btn-cyan" id="btn-save-raw-ideas">💾 Save & Sync Backlog</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

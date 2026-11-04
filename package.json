@@ -1,0 +1,13 @@
+{
+  "name": "motion-tv-game",
+  "version": "1.0.0",
+  "description": "Motion capture and motion controller gaming for Smart TV powered by an Android smartphone",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "tunnel": ".\\cloudflared.exe tunnel --url http://localhost:3000"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

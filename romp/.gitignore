@@ -1,0 +1,6 @@
+node_modules
+# dist included for production deployment
+test-results
+playwright-report
+*.log
+reports

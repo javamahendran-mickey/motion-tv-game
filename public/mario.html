@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Super Mario Motion - Smart TV Motion Game</title>
+  <link rel="stylesheet" href="mario.css">
+  <!-- QR Code Generator for zero-setup phone pairing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <div id="mario-app">
+    <!-- Top HUD Header -->
+    <header class="mario-hud">
+      <div class="hud-item">
+        <span class="hud-label">MARIO</span>
+        <span class="hud-val" id="score-val">000000</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">COINS</span>
+        <span class="hud-val" id="coins-val">🪙 x00</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">WORLD</span>
+        <span class="hud-val" id="world-val">1-1</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">TIME</span>
+        <span class="hud-val" id="time-val">400</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">LIVES</span>
+        <span class="hud-val" id="lives-val">❤️ x3</span>
+      </div>
+      <div class="hud-right">
+        <div class="motion-badge" id="motion-badge">
+          <span class="pulse-dot disconnected" id="mario-bulb"></span>
+          <span id="motion-mode-text">WAITING FOR PHONE...</span>
+        </div>
+        <a href="/tv" class="hud-nav-btn">⚔️ TV Arcade</a>
+        <a href="/romp/" class="hud-nav-btn">🕹️ Romp (17)</a>
+      </div>
+    </header>
+
+    <!-- Main Game Canvas Container -->
+    <main class="canvas-wrap">
+      <canvas id="mario-canvas"></canvas>
+
+      <!-- Live Body Motion Tracker Overlay in Corner -->
+      <div class="motion-tracker-card" id="motion-hud-card">
+        <div class="tracker-header">
+          <span>🧍 BODY MOTION SENSOR</span>
+          <span id="fps-counter">60 FPS</span>
+        </div>
+        <div class="motion-visual">
+          <div class="motion-lane">
+            <span class="lane-label">LEFT</span>
+            <div class="lane-track"><div class="lane-fill" id="fill-left"></div></div>
+          </div>
+          <div class="motion-center-dot" id="center-marker"></div>
+          <div class="motion-lane">
+            <span class="lane-label">RIGHT</span>
+            <div class="lane-track"><div class="lane-fill" id="fill-right"></div></div>
+          </div>
+        </div>
+        <div class="motion-actions-row">
+          <span class="action-tag" id="tag-jump">🦘 JUMP</span>
+          <span class="action-tag" id="tag-fire">🔥 FIREBALL</span>
+          <span class="action-tag" id="tag-duck">🦆 DUCK</span>
+        </div>
+      </div>
+
+      <!-- Welcome / Lobby Screen Overlay -->
+      <div id="mario-lobby" class="mario-modal active">
+        <div class="lobby-card">
+          <div class="mario-logo-title">
+            <div class="logo-sub">SUPER</div>
+            <div class="logo-main">MARIO MOTION</div>
+            <div class="logo-tag">BODY MOTION CONTROL FOR SMART TV</div>
+          </div>
+
+          <div class="lobby-body">
+            <!-- QR Box -->
+            <div class="qr-col">
+              <div id="mario-qr" class="qr-box"></div>
+              <p class="qr-subtext">Scan with phone camera to connect</p>
+              <div class="link-pill" id="mario-link-display">http://.../phone</div>
+            </div>
+
+            <!-- How to Play Column -->
+            <div class="guide-col">
+              <h3>🎮 HOW TO PLAY WITH YOUR BODY:</h3>
+              <div class="guide-step">
+                <span class="step-emoji">🚶</span>
+                <div>
+                  <strong>RUN LEFT & RIGHT:</strong>
+                  <p>Step or lean left to move left; step right to run right!</p>
+                </div>
+              </div>
+              <div class="guide-step">
+                <span class="step-emoji">🦘</span>
+                <div>
+                  <strong>PHYSICAL JUMP:</strong>
+                  <p>Jump up or throw your arms up to jump over pipes & stomp Goombas!</p>
+                </div>
+              </div>
+              <div class="guide-step">
+                <span class="step-emoji">🔥</span>
+                <div>
+                  <strong>FIREBALL PUNCH:</strong>
+                  <p>Punch forward to throw fireballs when powered up!</p>
+                </div>
+              </div>
+              <div class="guide-step">
+                <span class="step-emoji">🗡️</span>
+                <div>
+                  <strong>HANDHELD MODE:</strong>
+                  <p>Or hold phone in hand: tilt to steer, flick up to leap!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lobby-footer">
+            <button id="btn-start-mario" class="mario-btn-start">
+              ▶️ START GAME (PRESS ENTER OR PUNCH AIR)
+            </button>
+            <div class="audio-toggle-hint">
+              <span>🎵 Music: <b>Authentic 8-Bit BGM Synthesizer</b></span>
+              <button id="btn-mute" class="mute-btn">🔊 SOUND ON</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Over / Level Complete Modal -->
+      <div id="mario-end-modal" class="mario-modal">
+        <div class="lobby-card end-card">
+          <h2 id="end-title" class="end-title">STAGE CLEAR!</h2>
+          <div class="end-stats">
+            <div><span>FINAL SCORE:</span> <b id="end-score">000000</b></div>
+            <div><span>COINS COLLECTED:</span> <b id="end-coins">0</b></div>
+            <div><span>ENEMIES DEFEATED:</span> <b id="end-enemies">0</b></div>
+          </div>
+          <button id="btn-restart-mario" class="mario-btn-start">
+            ▶️ PLAY AGAIN
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="mario.js"></script>
+</body>
+</html>
+

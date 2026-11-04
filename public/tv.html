@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Motion Strike - Smart TV Arcade</title>
+  <link rel="stylesheet" href="tv.css">
+  <!-- Lightweight QR Code generator for pairing with phone -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Top Navigation HUD -->
+    <header class="hud-top">
+      <div class="logo-group">
+        <span class="icon">⚔️</span>
+        <h1>NEON MOTION STRIKE</h1>
+        <span class="tag">TV ARCADE</span>
+      </div>
+
+      <div class="stats-group">
+        <a href="/mario" class="arcade-switch-btn" id="btn-mario-header" style="background: linear-gradient(135deg, #e52521, #fbd000); color: #000; font-weight: bold; text-shadow: none;">
+          🍄 SUPER MARIO MOTION
+        </a>
+        <a href="/romp/" class="arcade-switch-btn" id="btn-romp-header">
+          🕹️ ROMP MOTION GAMES (17)
+        </a>
+        <div class="stat-pill">
+          <span class="stat-label">SCORE</span>
+          <span id="score-display" class="stat-value">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">COMBO</span>
+          <span id="combo-display" class="stat-value">0x</span>
+        </div>
+        <div class="stat-pill connection-pill" id="conn-pill">
+          <span class="status-dot disconnected" id="conn-dot"></span>
+          <span id="conn-text">WAITING FOR PHONE...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Game Canvas Container -->
+    <main class="canvas-container">
+      <canvas id="game-canvas"></canvas>
+
+      <!-- Connection Overlay / Lobby Screen -->
+      <div id="lobby-modal" class="overlay-modal active">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h2>CONNECT YOUR PHONE TO PLAY</h2>
+            <p>Your Android phone turns into a wireless motion capture controller!</p>
+          </div>
+
+          <div class="pairing-container">
+            <!-- QR Code Box -->
+            <div class="qr-wrapper">
+              <div id="qr-code"></div>
+              <p class="qr-label">Scan with your phone's camera</p>
+            </div>
+
+            <!-- Pairing Info / Direct Link -->
+            <div class="instructions-panel">
+              <div class="step-card">
+                <span class="step-num">1</span>
+                <div>
+                  <strong>Scan QR Code or visit:</strong>
+                  <div class="url-box" id="phone-url-display">http://.../phone</div>
+                  <span id="tunnel-badge" style="display:none; font-size:11px; color:#00ff88; margin-top:4px; font-weight:bold;">
+                    🔒 HTTPS Active · Instant Camera Tracking
+                  </span>
+                </div>
+              </div>
+
+              <div class="step-card">
+                <span class="step-num">2</span>
+                <div>
+                  <strong>Choose Controller Mode:</strong>
+                  <p class="hint">🗡️ <b>Handheld:</b> Hold phone and swing/punch like a sword.</p>
+                  <p class="hint">🧍 <b>Full-Body Track:</b> Prop phone facing you like a Kinect.</p>
+                </div>
+              </div>
+
+              <div class="step-card">
+                <span class="step-num">3</span>
+                <div>
+                  <strong>Press Start Button:</strong>
+                  <button id="start-btn" class="action-btn" disabled>
+                    WAITING FOR PHONE TO CONNECT...
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Super Mario Motion Showcase Banner -->
+          <div class="mario-banner-card" style="margin: 16px 0 10px 0; background: linear-gradient(135deg, rgba(229, 37, 33, 0.35), rgba(252, 188, 0, 0.35)); border: 2px solid #fcbc00; border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+            <div>
+              <div style="font-size: 16px; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 8px;">
+                <span>🍄 SUPER MARIO MOTION (NES PLATFORMER)</span>
+                <span style="background: #e52521; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 20px; text-transform: uppercase;">Body Motion</span>
+              </div>
+              <p style="margin: 4px 0 0 0; font-size: 12px; color: #cbd5e1;">Run by stepping left/right, physical jump over pipes & stomp Goombas, punch air to cast fireballs!</p>
+            </div>
+            <a href="/mario" class="action-btn" style="text-decoration: none; background: linear-gradient(135deg, #e52521, #fcbc00); border: none; font-size: 14px; padding: 10px 22px; border-radius: 10px; font-weight: 800; color: #000; box-shadow: 0 4px 15px rgba(229, 37, 33, 0.5); white-space: nowrap;">
+              ▶️ PLAY MARIO
+            </a>
+          </div>
+
+          <!-- Romp Games Showcase Card -->
+          <div class="romp-banner-card" style="margin: 0 0 16px 0; background: linear-gradient(135deg, rgba(255, 61, 110, 0.25), rgba(124, 58, 237, 0.25)); border: 2px solid #ff3d6e; border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+            <div>
+              <div style="font-size: 16px; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 8px;">
+                <span>🌟 ROMP MOTION ARENA (17 CAMERA-TRACKED GAMES)</span>
+                <span style="background: #ff3d6e; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 20px; text-transform: uppercase;">Full Body</span>
+              </div>
+              <p style="margin: 4px 0 0 0; font-size: 12px; color: #cbd5e1;">Slice, Run, Jab, Goalie, Jacks, Lumber, Keepy-Uppy, Beat, Leaks, Freeze & more directly on TV!</p>
+            </div>
+            <a href="/romp/" class="action-btn" style="text-decoration: none; background: linear-gradient(135deg, #ff3d6e, #7c3aed); border: none; font-size: 14px; padding: 10px 22px; border-radius: 10px; font-weight: 800; color: #fff; box-shadow: 0 4px 15px rgba(255, 61, 110, 0.4); white-space: nowrap;">
+              ▶️ PLAY ROMP GAMES
+            </a>
+          </div>
+
+          <!-- Game Mode Selector -->
+          <div class="mode-selector">
+            <h3>SELECT GAME (10 BLOCKBUSTER KIDS ARCADE MODES)</h3>
+            <div class="mode-options">
+              <button class="mode-card" data-mode="mario" onclick="window.location.href='/mario'">
+                <span class="mode-icon">🍄</span>
+                <span class="mode-title">Super Mario</span>
+                <span class="mode-desc">World 1-1 body motion platformer: run, leap & fireball</span>
+              </button>
+              <button class="mode-card active" data-mode="fruit">
+                <span class="mode-icon">🍉</span>
+                <span class="mode-title">Fruit Ninja</span>
+                <span class="mode-desc">Slice flying watermelons, pineapples & rainbow stars</span>
+              </button>
+              <button class="mode-card" data-mode="saber">
+                <span class="mode-icon">⚡</span>
+                <span class="mode-title">Neon Saber</span>
+                <span class="mode-desc">Magnetic rhythm blade slashes with combo streaks</span>
+              </button>
+              <button class="mode-card" data-mode="tennis">
+                <span class="mode-icon">🎾</span>
+                <span class="mode-title">Wii Tennis</span>
+                <span class="mode-desc">Smash serves & volleys across the net with real swings</span>
+              </button>
+              <button class="mode-card" data-mode="wizard">
+                <span class="mode-icon">🧙‍♂️</span>
+                <span class="mode-title">Wizard Duel</span>
+                <span class="mode-desc">Wave magic wand to cast fireballs, ice & lightning</span>
+              </button>
+              <button class="mode-card" data-mode="balloon">
+                <span class="mode-icon">🎈</span>
+                <span class="mode-title">Balloon Pop</span>
+                <span class="mode-desc">Carnival dart frenzy popping rainbow balloons & gifts</span>
+              </button>
+              <button class="mode-card" data-mode="kart">
+                <span class="mode-icon">🏎️</span>
+                <span class="mode-title">Neon Kart</span>
+                <span class="mode-desc">Tilt like steering wheel, grab coins & turbo nitro</span>
+              </button>
+              <button class="mode-card" data-mode="dodge">
+                <span class="mode-icon">🚀</span>
+                <span class="mode-title">Galaxy Rider</span>
+                <span class="mode-desc">Tilt ship to dodge asteroids & collect cosmic gems</span>
+              </button>
+              <button class="mode-card" data-mode="boxing">
+                <span class="mode-icon">👾</span>
+                <span class="mode-title">Monster Bonk</span>
+                <span class="mode-desc">Whack and punch goofy alien pop-up monsters</span>
+              </button>
+              <button class="mode-card" data-mode="soccer">
+                <span class="mode-icon">⚽</span>
+                <span class="mode-title">Soccer Striker</span>
+                <span class="mode-desc">Kick thrilling penalty curve shots into the goal</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Over / Pause Overlay -->
+      <div id="gameover-modal" class="overlay-modal">
+        <div class="modal-card">
+          <h2 class="gameover-title">ROUND FINISHED!</h2>
+          <div class="final-stats">
+            <div class="big-stat">
+              <div class="label">FINAL SCORE</div>
+              <div id="final-score" class="num">0</div>
+            </div>
+            <div class="big-stat">
+              <div class="label">MAX COMBO</div>
+              <div id="max-combo" class="num">0x</div>
+            </div>
+            <div class="big-stat">
+              <div class="label">ACCURACY</div>
+              <div id="accuracy-stat" class="num">0%</div>
+            </div>
+          </div>
+          <button id="restart-btn" class="action-btn restart">PLAY AGAIN</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom HUD Info -->
+    <footer class="hud-bottom">
+      <div class="info-group">
+        <span>Room: <strong id="room-id-display">TV-1</strong></span>
+        <span class="divider">|</span>
+        <span>Controller Mode: <strong id="controller-mode-display">None</strong></span>
+        <span class="divider">|</span>
+        <span>Motion Latency: <strong id="latency-display">-- ms</strong></span>
+      </div>
+      <div class="controls-hint">
+        <span>Audio: <strong>Synthesizer Active (Stereo)</strong></span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="tv.js"></script>
+</body>
+</html>
