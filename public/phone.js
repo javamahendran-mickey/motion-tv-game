@@ -11,7 +11,12 @@
   let savedRoom = null;
   try { savedRoom = localStorage.getItem('phone_last_room'); } catch (e) {}
   let ROOM_ID = paramRoom || savedRoom || 'MAIN';
-  function updateRompLinks() { const lp = document.getElementById('link-play-romp-phone'); if (lp) lp.href = /romp/?room=&cast=1; const tr = document.getElementById('tab-romp'); if (tr) tr.href = /romp/?room=&cast=1; }
+  function updateRompLinks() {
+    const lp = document.getElementById('link-play-romp-phone');
+    if (lp) lp.href = '/romp/?room=' + encodeURIComponent(ROOM_ID) + '&cast=1';
+    const tr = document.getElementById('tab-romp');
+    if (tr) tr.href = '/romp/?room=' + encodeURIComponent(ROOM_ID) + '&cast=1';
+  }
   setTimeout(updateRompLinks, 500);
 
   // DOM Elements

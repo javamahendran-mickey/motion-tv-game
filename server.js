@@ -314,9 +314,14 @@ wss.on('connection', (ws, req) => {
             room.phone.send(JSON.stringify({ type: 'peer_status', tvConnected: true, roomId: clientRoomId }));
           }
         } else if (clientRole === 'romp_tv') {
-          // ROMP TV display — receives pose data from phone, renders ROMP full-screen
+          // ROMP TV display — receives pose data and WebRTC video stream from phone
+          activeTvWs = ws;
+          activeTvRoomId = clientRoomId;
           const room = getOrCreateRoom(clientRoomId);
           room.romp_tv = ws;
+          if (!room.phone && globalPhoneWs && globalPhoneWs.readyState === ws.OPEN) {
+            room.phone = globalPhoneWs;
+          }
           console.log(`[Server] ROMP-TV registered in room: ${clientRoomId}`);
           ws.send(JSON.stringify({
             type: 'registered',
@@ -424,8 +429,9 @@ wss.on('connection', (ws, req) => {
         }
       } else if (clientRole === 'tv' || clientRole === 'romp_tv') {
         const room = clientRoomId ? rooms.get(clientRoomId) : null;
-        if (room && room.phone && room.phone.readyState === ws.OPEN) {
-          room.phone.send(textData);
+        const targetPhone = (room && room.phone && room.phone.readyState === ws.OPEN) ? room.phone : globalPhoneWs;
+        if (targetPhone && targetPhone.readyState === ws.OPEN) {
+          targetPhone.send(textData);
         }
       }
     } catch (e) {
