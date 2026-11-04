@@ -107,6 +107,12 @@ The project is hosted live on **Render** (Free Tier):
 | **Agent / Admin Dashboard** | `https://motion-tv-game.onrender.com/dashboard` |
 | **Server Diagnostic Info** | `https://motion-tv-game.onrender.com/api/info` |
 
+### ⏰ 24/7 Keep-Alive Monitoring (Zero Cold Starts)
+Render's free tier spins down services after 15 minutes of inactivity. To prevent sleep and keep the server hot 24/7 for free:
+* **UptimeRobot Monitor**: [UptimeRobot Monitor #804546759](https://dashboard.uptimerobot.com/monitors/804546759)
+* **Target Endpoint**: `https://motion-tv-game.onrender.com/api/info` (HTTP ping every 5–10 minutes).
+* **Result**: Keeps the Render container active continuously, giving you 0 cold starts and instant connection on both TV and phone without paying any monthly fees.
+
 ---
 
 ## 📺 Android TV Native App (`com.motiontv.arcade`)
