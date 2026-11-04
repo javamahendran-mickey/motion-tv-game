@@ -77,8 +77,8 @@ const MIME_TYPES = {
   '.map': 'application/json'
 };
 
-// Cloudflare Tunnel State
-let tunnelUrl = null;
+// Cloudflare Tunnel State (or Render Cloud Host URL)
+let tunnelUrl = process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_URL || null;
 let tunnelProcess = null;
 
 // HTTP Server
@@ -537,6 +537,13 @@ function startServer(port) {
     console.log(`📱 Phone Controller URL:   http://${LOCAL_IP}:${currentPort}/phone`);
     console.log(`🕹️ Romp Motion Games URL:   http://${LOCAL_IP}:${currentPort}/romp/`);
     console.log('======================================================');
+    if (tunnelUrl) {
+      console.log(`🌐 Public Production URL:  ${tunnelUrl}`);
+      console.log(`📺 Smart TV Arcade URL:     ${tunnelUrl}/tv`);
+      console.log(`📱 Phone Controller URL:   ${tunnelUrl}/phone`);
+      console.log(`🕹️ Romp Motion Games URL:   ${tunnelUrl}/romp/`);
+      console.log('======================================================');
+    }
     console.log('1. Open TV Arcade on your Thomson TV (or Leanback App).');
     console.log('2. Phone will auto-pair permanently to this TV!\n');
 
