@@ -89,3 +89,4 @@ The console will output your local network address:
 1. **Local Wi-Fi**: Ensure your PC, Smart TV, and Android phone are all connected to the same Wi-Fi network (5 GHz recommended for minimum latency).
 2. **Wrist Safety**: When using Handheld Mode, hold your phone firmly or use a phone case / lanyard.
 3. **Lighting for Camera Mode**: In Optical Body Tracking mode, ensure the room has good lighting so the camera can clearly detect your shoulders and wrists.
+# motion-tv-game
