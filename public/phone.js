@@ -102,7 +102,7 @@
     .catch(() => {});
 
   // Tab Switching
-  tabHandheld.addEventListener('click', () => {
+  if (tabHandheld) tabHandheld.addEventListener('click', () => {
     activeMode = 'handheld';
     tabHandheld.classList.add('active');
     tabBody.classList.remove('active');
@@ -112,7 +112,7 @@
     sendModeSelect('Handheld Sensors (IMU)');
   });
 
-  tabBody.addEventListener('click', () => {
+  if (tabBody) tabBody.addEventListener('click', () => {
     activeMode = 'body';
     tabBody.classList.add('active');
     tabHandheld.classList.remove('active');
@@ -1201,7 +1201,7 @@
     if (poseCanvasCtx) poseCanvasCtx.clearRect(0, 0, poseCanvas.width, poseCanvas.height);
   }
 
-  btnToggleCamera.addEventListener('click', () => {
+  if (btnToggleCamera) btnToggleCamera.addEventListener('click', () => {
     if (isCameraActive) {
       stopCameraTracking();
     } else {

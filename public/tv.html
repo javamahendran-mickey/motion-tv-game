@@ -62,118 +62,49 @@
             <!-- Pairing Info / Direct Link -->
             <div class="instructions-panel">
               <div class="step-card">
-                <span class="step-num">1</span>
                 <div>
-                  <strong>Scan QR Code or visit:</strong>
+                  <strong>Scan or open on phone:</strong>
                   <div class="url-box" id="phone-url-display">http://.../phone</div>
                   <span id="tunnel-badge" style="display:none; font-size:11px; color:#00ff88; margin-top:4px; font-weight:bold;">
-                    🔒 HTTPS Active · Instant Camera Tracking
+                    🔒 HTTPS Active
                   </span>
                 </div>
               </div>
 
-              <div class="step-card">
-                <span class="step-num">2</span>
-                <div>
-                  <strong>Choose Controller Mode:</strong>
-                  <p class="hint">🗡️ <b>Handheld:</b> Hold phone and swing/punch like a sword.</p>
-                  <p class="hint">🧍 <b>Full-Body Track:</b> Prop phone facing you like a Kinect.</p>
-                </div>
-              </div>
-
-              <div class="step-card">
-                <span class="step-num">3</span>
-                <div>
-                  <strong>Press Start Button:</strong>
-                  <button id="start-btn" class="action-btn" disabled>
-                    WAITING FOR PHONE TO CONNECT...
-                  </button>
-                </div>
-              </div>
+              <button id="start-btn" class="action-btn" style="width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 900; margin-top: 6px;" disabled>
+                WAITING FOR PHONE TO CONNECT...
+              </button>
             </div>
           </div>
 
-          <!-- Super Mario Motion Showcase Banner -->
-          <div class="mario-banner-card" style="margin: 16px 0 10px 0; background: linear-gradient(135deg, rgba(229, 37, 33, 0.35), rgba(252, 188, 0, 0.35)); border: 2px solid #fcbc00; border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
-            <div>
-              <div style="font-size: 16px; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 8px;">
-                <span>🍄 SUPER MARIO MOTION (NES PLATFORMER)</span>
-                <span style="background: #e52521; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 20px; text-transform: uppercase;">Body Motion</span>
-              </div>
-              <p style="margin: 4px 0 0 0; font-size: 12px; color: #cbd5e1;">Run by stepping left/right, physical jump over pipes & stomp Goombas, punch air to cast fireballs!</p>
-            </div>
-            <a href="/mario" class="action-btn" style="text-decoration: none; background: linear-gradient(135deg, #e52521, #fcbc00); border: none; font-size: 14px; padding: 10px 22px; border-radius: 10px; font-weight: 800; color: #000; box-shadow: 0 4px 15px rgba(229, 37, 33, 0.5); white-space: nowrap;">
-              ▶️ PLAY MARIO
-            </a>
-          </div>
-
-          <!-- Romp Games Showcase Card -->
-          <div class="romp-banner-card" style="margin: 0 0 16px 0; background: linear-gradient(135deg, rgba(255, 61, 110, 0.25), rgba(124, 58, 237, 0.25)); border: 2px solid #ff3d6e; border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
-            <div>
-              <div style="font-size: 16px; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 8px;">
-                <span>🌟 ROMP MOTION ARENA (17 CAMERA-TRACKED GAMES)</span>
-                <span style="background: #ff3d6e; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 20px; text-transform: uppercase;">Full Body</span>
-              </div>
-              <p style="margin: 4px 0 0 0; font-size: 12px; color: #cbd5e1;">Slice, Run, Jab, Goalie, Jacks, Lumber, Keepy-Uppy, Beat, Leaks, Freeze & more directly on TV!</p>
-            </div>
-            <a href="/romp-tv" id="btn-launch-romp-lobby" class="action-btn" style="text-decoration: none; background: linear-gradient(135deg, #ff3d6e, #7c3aed); border: none; font-size: 14px; padding: 10px 22px; border-radius: 10px; font-weight: 800; color: #fff; box-shadow: 0 4px 15px rgba(255, 61, 110, 0.4); white-space: nowrap;">
-              📺 CAST ROMP TO TV
-            </a>
-          </div>
-
-          <!-- Game Mode Selector -->
+          <!-- Clean Game Selector Grid -->
           <div class="mode-selector">
-            <h3>SELECT GAME (10 BLOCKBUSTER KIDS ARCADE MODES)</h3>
-            <div class="mode-options">
-              <button class="mode-card" data-mode="mario" onclick="window.location.href='/mario'">
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 12px; text-align: center; letter-spacing: 1px;">CHOOSE GAME</h3>
+            <div class="mode-options" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+              <button class="mode-card" data-mode="mario" onclick="window.location.href='/mario'" style="border-color: #fcbc00;">
                 <span class="mode-icon">🍄</span>
-                <span class="mode-title">Super Mario</span>
-                <span class="mode-desc">World 1-1 body motion platformer: run, leap & fireball</span>
+                <span class="mode-title" style="color: #fcbc00;">Super Mario</span>
+                <span class="mode-desc">World 1-1 platformer: run, leap &amp; fire</span>
               </button>
               <button class="mode-card active" data-mode="fruit">
                 <span class="mode-icon">🍉</span>
                 <span class="mode-title">Fruit Ninja</span>
-                <span class="mode-desc">Slice flying watermelons, pineapples & rainbow stars</span>
+                <span class="mode-desc">Slice flying watermelons &amp; stars</span>
               </button>
               <button class="mode-card" data-mode="saber">
                 <span class="mode-icon">⚡</span>
                 <span class="mode-title">Neon Saber</span>
-                <span class="mode-desc">Magnetic rhythm blade slashes with combo streaks</span>
-              </button>
-              <button class="mode-card" data-mode="tennis">
-                <span class="mode-icon">🎾</span>
-                <span class="mode-title">Wii Tennis</span>
-                <span class="mode-desc">Smash serves & volleys across the net with real swings</span>
-              </button>
-              <button class="mode-card" data-mode="wizard">
-                <span class="mode-icon">🧙‍♂️</span>
-                <span class="mode-title">Wizard Duel</span>
-                <span class="mode-desc">Wave magic wand to cast fireballs, ice & lightning</span>
-              </button>
-              <button class="mode-card" data-mode="balloon">
-                <span class="mode-icon">🎈</span>
-                <span class="mode-title">Balloon Pop</span>
-                <span class="mode-desc">Carnival dart frenzy popping rainbow balloons & gifts</span>
+                <span class="mode-desc">Rhythm blade slashes &amp; combo streaks</span>
               </button>
               <button class="mode-card" data-mode="kart">
                 <span class="mode-icon">🏎️</span>
                 <span class="mode-title">Neon Kart</span>
-                <span class="mode-desc">Tilt like steering wheel, grab coins & turbo nitro</span>
+                <span class="mode-desc">Tilt steering, grab coins &amp; turbo</span>
               </button>
-              <button class="mode-card" data-mode="dodge">
-                <span class="mode-icon">🚀</span>
-                <span class="mode-title">Galaxy Rider</span>
-                <span class="mode-desc">Tilt ship to dodge asteroids & collect cosmic gems</span>
-              </button>
-              <button class="mode-card" data-mode="boxing">
-                <span class="mode-icon">👾</span>
-                <span class="mode-title">Monster Bonk</span>
-                <span class="mode-desc">Whack and punch goofy alien pop-up monsters</span>
-              </button>
-              <button class="mode-card" data-mode="soccer">
-                <span class="mode-icon">⚽</span>
-                <span class="mode-title">Soccer Striker</span>
-                <span class="mode-desc">Kick thrilling penalty curve shots into the goal</span>
+              <button class="mode-card" data-mode="romp" onclick="window.location.href='/romp-tv'" style="border-color: #ff3d6e;">
+                <span class="mode-icon">🕹️</span>
+                <span class="mode-title" style="color: #ff3d6e;">ROMP 17 Games</span>
+                <span class="mode-desc">17 Camera Games: Run, Pulse, Slice</span>
               </button>
             </div>
           </div>
