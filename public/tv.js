@@ -1088,6 +1088,7 @@
         } else if (msg.type === 'select_game_mode') {
           // Phone chose a new game!
           if (msg.mode === 'mario') { window.location.href = `/mario?room=${ROOM_ID}`; return; }
+          if (msg.mode === 'romp') { window.location.href = `/romp-tv?room=${ROOM_ID}`; return; }
           gameState.mode = msg.mode;
           document.querySelectorAll('.mode-card').forEach((c) => {
             c.classList.toggle('active', c.dataset.mode === msg.mode);
@@ -1142,13 +1143,12 @@
 
   function handlePhoneMotion(msg) {
     controllerModeDisplay.textContent = 'Handheld Sensors (IMU)';
-    if (msg.gamma !== undefined) {
-      // Natural curve: 14 degrees of comfortable tilt reaches full screen edge
-      const norm = Math.max(-1, Math.min(1, msg.gamma / 14));
-      const sign = norm < 0 ? -1 : 1;
-      motionData.tiltX = sign * Math.pow(Math.abs(norm), 0.92);
-    } else if (msg.tiltX !== undefined) {
+    if (msg.tiltX !== undefined) {
       motionData.tiltX = Math.max(-1, Math.min(1, msg.tiltX));
+    } else if (msg.gamma !== undefined) {
+      const norm = Math.max(-1, Math.min(1, msg.gamma / 24));
+      const sign = norm < 0 ? -1 : 1;
+      motionData.tiltX = sign * Math.pow(Math.abs(norm), 1.15);
     }
     if (msg.accelMag !== undefined) {
       motionData.accelMag = msg.accelMag;

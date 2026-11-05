@@ -10,6 +10,9 @@
 </head>
 <body>
   <div id="controller-app">
+    <!-- Floating Toast Notification for Fast Feedback -->
+    <div id="toast-notify" class="toast-notify"></div>
+
     <!-- Top Status Bar: Clean, minimal -->
     <header class="controller-bar">
       <div class="status-indicator">
@@ -19,11 +22,15 @@
       <div class="latency-badge" id="ping-badge">-- ms</div>
     </header>
 
-    <!-- 3 Simple Mode Tabs -->
+    <!-- 4 Clean Navigation Tabs -->
     <nav class="mode-tabs">
       <button class="tab-btn active" id="tab-handheld">
         <span class="tab-icon">🎮</span>
         <span class="tab-text">Gamepad</span>
+      </button>
+      <button class="tab-btn" id="tab-games">
+        <span class="tab-icon">🕹️</span>
+        <span class="tab-text">Games List</span>
       </button>
       <button class="tab-btn" id="tab-body">
         <span class="tab-icon">🧍</span>
@@ -31,56 +38,99 @@
       </button>
       <a class="tab-btn" id="tab-romp" href="/romp/" style="text-decoration: none; color: inherit;">
         <span class="tab-icon">📺</span>
-        <span class="tab-text">Cast ROMP</span>
+        <span class="tab-text">ROMP Cast</span>
       </a>
     </nav>
 
-    <!-- Quick Game Selection Bar (Single clean row) -->
-    <div class="game-select-bar">
-      <button class="game-pill-btn active" data-game="mario">🍄 Super Mario</button>
-      <button class="game-pill-btn" data-game="fruit">🍉 Fruit Ninja</button>
-      <button class="game-pill-btn" data-game="saber">⚡ Neon Saber</button>
-      <button class="game-pill-btn" data-game="kart">🏎️ Kart Racer</button>
-      <button class="game-pill-btn" data-game="dodge">🚀 Galaxy</button>
-    </div>
-
-    <!-- VIEW 1: GAMEPAD / TOUCH (Simple, ergonomic, arcade feel) -->
+    <!-- VIEW 1: GAMEPAD / CONTROLS -->
     <section class="mode-view active" id="view-handheld">
+      <!-- Active Game Quick Banner -->
+      <div class="active-game-banner" id="btn-banner-choose-game">
+        <div class="banner-left">
+          <span class="game-emoji" id="current-game-emoji">🍄</span>
+          <div class="banner-text">
+            <span class="banner-sub">ACTIVE GAME (TAP TO CHANGE)</span>
+            <span class="banner-name" id="current-game-title">Super Mario Motion</span>
+          </div>
+        </div>
+        <span class="banner-arrow">🕹️ CHANGE ▾</span>
+      </div>
+
+      <!-- Start Game on TV Button -->
       <button class="action-btn-green" id="btn-start-tv">
         ▶️ START GAME ON TV
       </button>
 
-      <!-- Clean Ergonomic Arcade D-Pad & Action Buttons -->
-      <div class="arcade-gamepad">
-        <!-- Directional Pad (Left & Right) -->
-        <div class="dpad-group">
-          <button id="btn-mario-left" class="pad-btn pad-left">
-            <span class="pad-arrow">◀</span>
-            <span class="pad-label">RUN LEFT</span>
-          </button>
-          <button id="btn-mario-right" class="pad-btn pad-right">
-            <span class="pad-arrow">▶</span>
-            <span class="pad-label">RUN RIGHT</span>
-          </button>
+      <!-- Dynamic Tilt & Steering HUD -->
+      <div class="steering-hud" id="steering-hud">
+        <div class="steering-track">
+          <div class="steering-indicator" id="steering-indicator"></div>
         </div>
+        <div class="steering-labels">
+          <span>◀ TILT LEFT</span>
+          <span id="steering-angle-text">0° (LEVEL)</span>
+          <span>TILT RIGHT ▶</span>
+        </div>
+      </div>
 
-        <!-- Action Pad (Jump / Fire / Strike) -->
-        <div class="action-group">
-          <button id="btn-mario-jump" class="action-btn-jump">
-            <span class="action-icon">🦘</span>
-            <span class="action-label">JUMP</span>
+      <!-- MARIO CONTROLS (D-Pad + Jump/Fire) -->
+      <div class="game-control-cluster" id="cluster-mario">
+        <div class="arcade-gamepad">
+          <div class="dpad-group">
+            <button id="btn-mario-left" class="pad-btn pad-left">
+              <span class="pad-arrow">◀</span>
+              <span class="pad-label">RUN LEFT</span>
+            </button>
+            <button id="btn-mario-right" class="pad-btn pad-right">
+              <span class="pad-arrow">▶</span>
+              <span class="pad-label">RUN RIGHT</span>
+            </button>
+          </div>
+          <div class="action-group">
+            <button id="btn-mario-jump" class="action-btn-jump">
+              <span class="action-icon">🦘</span>
+              <span class="action-label">JUMP</span>
+            </button>
+            <button id="btn-mario-fire" class="action-btn-fire">
+              <span class="action-icon">🔥</span>
+              <span class="action-label">FIRE / HIT</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RACING & DODGE CONTROLS (Kart / Galaxy) -->
+      <div class="game-control-cluster" id="cluster-kart" style="display: none;">
+        <div class="arcade-gamepad">
+          <button id="btn-kart-nitro" class="kart-btn nitro-btn">
+            <span class="action-icon">🚀</span>
+            <span class="action-label">NITRO TURBO</span>
           </button>
-          <button id="btn-mario-fire" class="action-btn-fire">
-            <span class="action-icon">🔥</span>
-            <span class="action-label">FIRE / HIT</span>
+          <button id="btn-kart-drift" class="kart-btn drift-btn">
+            <span class="action-icon">⚡</span>
+            <span class="action-label">DRIFT / BRAKE</span>
           </button>
         </div>
       </div>
 
-      <!-- Physical Phone Swing Button -->
+      <!-- BOXING & SOCCER CONTROLS -->
+      <div class="game-control-cluster" id="cluster-boxing" style="display: none;">
+        <div class="arcade-gamepad">
+          <button id="btn-box-punch-left" class="kart-btn nitro-btn">
+            <span class="action-icon">🥊</span>
+            <span class="action-label">LEFT PUNCH</span>
+          </button>
+          <button id="btn-box-punch-right" class="kart-btn drift-btn">
+            <span class="action-icon">💥</span>
+            <span class="action-label">RIGHT HOOK</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Physical Phone Swing Button (Works for Fruit Ninja, Neon Saber, Tennis, Wizard, Balloon) -->
       <button class="big-strike-btn" id="btn-strike">
         🗡️ PHYSICAL SWING / SLASH
-        <small>(Or swing your phone firmly like a sword!)</small>
+        <small>(Or firmly swing your phone like a sword or racket!)</small>
       </button>
 
       <!-- Bottom Mini-Controls -->
@@ -91,7 +141,18 @@
       </div>
     </section>
 
-    <!-- VIEW 2: BODY CAMERA (Clean, full view, simple controls) -->
+    <!-- VIEW 2: GAMES LIST (Select any arcade or motion game) -->
+    <section class="mode-view" id="view-games">
+      <div class="games-list-header">
+        <h2>🕹️ ALL GAMES</h2>
+        <p>Choose any game below to instantly switch the TV screen</p>
+      </div>
+      <div class="games-scroll-list" id="games-scroll-list">
+        <!-- Rendered by phone.js from GAMES_CATALOG -->
+      </div>
+    </section>
+
+    <!-- VIEW 3: BODY CAMERA (Clean, full view, simple controls) -->
     <section class="mode-view" id="view-body">
       <button class="action-btn-green" id="btn-start-tv-body">
         ▶️ START GAME ON TV
@@ -132,7 +193,7 @@
       </div>
     </section>
 
-    <!-- Hidden elements kept for script compatibility -->
+    <!-- Hidden compatibility elements kept for legacy bindings -->
     <div style="display: none;" aria-hidden="true">
       <div id="phone-3d"></div>
       <span id="intensity-val"></span>
@@ -155,6 +216,8 @@
       <button id="btn-body-mario-jump"></button>
       <button id="btn-body-mario-fire"></button>
       <div id="camera-tap-prompt"></div>
+      <!-- Keep empty game-pill-btns so querySelectorAll doesn't break if referenced -->
+      <div class="game-select-bar"></div>
     </div>
 
     <!-- Romp Launcher Modal: Clean 1-card dialog -->

@@ -24,9 +24,25 @@
   const statusLabel = document.getElementById('status-label');
   const pingBadge = document.getElementById('ping-badge');
   const tabHandheld = document.getElementById('tab-handheld');
+  const tabGames = document.getElementById('tab-games');
   const tabBody = document.getElementById('tab-body');
   const viewHandheld = document.getElementById('view-handheld');
+  const viewGames = document.getElementById('view-games');
   const viewBody = document.getElementById('view-body');
+  const btnBannerChooseGame = document.getElementById('btn-banner-choose-game');
+  const currentGameEmoji = document.getElementById('current-game-emoji');
+  const currentGameTitle = document.getElementById('current-game-title');
+  const steeringIndicator = document.getElementById('steering-indicator');
+  const steeringAngleText = document.getElementById('steering-angle-text');
+  const clusterMario = document.getElementById('cluster-mario');
+  const clusterKart = document.getElementById('cluster-kart');
+  const clusterBoxing = document.getElementById('cluster-boxing');
+  const toastNotify = document.getElementById('toast-notify');
+  const gamesScrollList = document.getElementById('games-scroll-list');
+  const btnKartNitro = document.getElementById('btn-kart-nitro');
+  const btnKartDrift = document.getElementById('btn-kart-drift');
+  const btnBoxPunchLeft = document.getElementById('btn-box-punch-left');
+  const btnBoxPunchRight = document.getElementById('btn-box-punch-right');
   const phone3D = document.getElementById('phone-3d');
   const intensityVal = document.getElementById('intensity-val');
   const intensityFill = document.getElementById('intensity-fill');
@@ -63,6 +79,33 @@
   let invertBody = true; // default mirrored for front selfie camera
   let currentFacingMode = 'user'; // 'user' or 'environment'
 
+  // Toast Notification Helper
+  let toastTimer = null;
+  function showToast(text) {
+    if (!toastNotify) return;
+    toastNotify.textContent = text;
+    toastNotify.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toastNotify.classList.remove('show');
+    }, 2200);
+  }
+
+  // Games Catalog (11 Complete Arcade & Motion Games)
+  const GAMES_CATALOG = [
+    { id: 'mario', title: 'Super Mario Motion', icon: '🍄', category: 'Platformer', desc: 'Run, jump, duck & throw fireballs using motion tilt or touch buttons!', badge: '🔥 TOP PICK' },
+    { id: 'fruit', title: 'Fruit Ninja Motion', icon: '🍉', category: 'Sword Slicer', desc: 'Slice flying fruits with real physical sword swings using your phone!', badge: '⚔️ MOTION' },
+    { id: 'saber', title: 'Neon Saber Rhythm', icon: '⚡', category: 'Rhythm Blade', desc: 'Slice incoming neon beat cubes to the rhythm of high-energy cyber beats.', badge: '⚡ CYBER' },
+    { id: 'kart', title: 'Neon Kart Racer', icon: '🏎️', category: 'Tilt Steering', desc: 'Turn phone like a steering wheel to steer, drift & hit turbo nitro!', badge: '🏁 RACING' },
+    { id: 'dodge', title: 'Galaxy Rider', icon: '🚀', category: 'Space Dodger', desc: 'Pilot your cosmic starship through asteroid storms & collect gems.', badge: '🌌 ARCADE' },
+    { id: 'tennis', title: 'Wii Grand Slam Tennis', icon: '🎾', category: 'Sports Smash', desc: 'Serve, volley & smash tennis balls with natural racket swings.', badge: '🎾 SPORTS' },
+    { id: 'wizard', title: 'Wizard Spell Duel', icon: '🧙‍♂️', category: 'Magic Wand', desc: 'Flick your wand to cast explosive fire & lightning spells!', badge: '✨ MAGIC' },
+    { id: 'balloon', title: 'Balloon Pop Carnival', icon: '🎈', category: 'Darts Arcade', desc: 'Aim and flick darts to pop flying carnival prize balloons.', badge: '🎯 CARNIVAL' },
+    { id: 'boxing', title: 'Monster Alien Bonk', icon: '👾', category: 'Punch Whack', desc: 'Whack pesky space aliens as they pop up with rapid punches.', badge: '🥊 ACTION' },
+    { id: 'soccer', title: 'Soccer Penalty Striker', icon: '⚽', category: 'Penalty Kick', desc: 'Curve kicks into the goal net or block shots as goalkeeper.', badge: '⚽ SOCCER' },
+    { id: 'romp', title: 'ROMP 17-in-1 Suite', icon: '🕹️', category: 'Full-Body Suite', desc: '17 fitness and party motion games (Jump, Duck, Pulse, Goalie & more).', badge: '🧍 17 GAMES' },
+  ];
+  let currentActiveGame = 'mario';
   // Sensor State
   let gyroOffset = { beta: 0, gamma: 0 };
   let currentOrientation = { beta: 0, gamma: 0, alpha: 0 };
@@ -101,25 +144,120 @@
     })
     .catch(() => {});
 
-  // Tab Switching
-  if (tabHandheld) tabHandheld.addEventListener('click', () => {
-    activeMode = 'handheld';
-    tabHandheld.classList.add('active');
-    tabBody.classList.remove('active');
-    viewHandheld.classList.add('active');
-    viewBody.classList.remove('active');
-    stopCameraTracking();
-    sendModeSelect('Handheld Sensors (IMU)');
-  });
+  // Tab Switching & Navigation
+  function switchTab(target) {
+    [tabHandheld, tabGames, tabBody].forEach(t => { if (t) t.classList.remove('active'); });
+    [viewHandheld, viewGames, viewBody].forEach(v => { if (v) v.classList.remove('active'); });
 
-  if (tabBody) tabBody.addEventListener('click', () => {
-    activeMode = 'body';
-    tabBody.classList.add('active');
-    tabHandheld.classList.remove('active');
-    viewBody.classList.add('active');
-    viewHandheld.classList.remove('active');
-    sendModeSelect('Optical Body Tracking');
-  });
+    if (target === 'handheld') {
+      activeMode = 'handheld';
+      if (tabHandheld) tabHandheld.classList.add('active');
+      if (viewHandheld) viewHandheld.classList.add('active');
+      stopCameraTracking();
+      sendModeSelect('Handheld Sensors (IMU)');
+    } else if (target === 'games') {
+      if (tabGames) tabGames.classList.add('active');
+      if (viewGames) viewGames.classList.add('active');
+      stopCameraTracking();
+    } else if (target === 'body') {
+      activeMode = 'body';
+      if (tabBody) tabBody.classList.add('active');
+      if (viewBody) viewBody.classList.add('active');
+      sendModeSelect('Optical Body Tracking');
+    }
+  }
+
+  if (tabHandheld) tabHandheld.addEventListener('click', () => switchTab('handheld'));
+  if (tabGames) tabGames.addEventListener('click', () => switchTab('games'));
+  if (tabBody) tabBody.addEventListener('click', () => switchTab('body'));
+  if (btnBannerChooseGame) btnBannerChooseGame.addEventListener('click', () => switchTab('games'));
+
+  // Game Selection & Dynamic UI Customizer
+  function selectGame(gameId) {
+    currentActiveGame = gameId;
+    const game = GAMES_CATALOG.find(g => g.id === gameId) || GAMES_CATALOG[0];
+
+    // Update Banner
+    if (currentGameEmoji) currentGameEmoji.textContent = game.icon;
+    if (currentGameTitle) currentGameTitle.textContent = game.title;
+
+    // Toggle contextual game pads
+    if (clusterMario) clusterMario.style.display = (gameId === 'mario') ? 'block' : 'none';
+    if (clusterKart) clusterKart.style.display = (gameId === 'kart' || gameId === 'dodge') ? 'block' : 'none';
+    if (clusterBoxing) clusterBoxing.style.display = (gameId === 'boxing' || gameId === 'soccer') ? 'block' : 'none';
+
+    // Tailor physical swing button label
+    if (btnStrike) {
+      if (gameId === 'kart' || gameId === 'dodge') {
+        btnStrike.style.display = 'none';
+      } else {
+        btnStrike.style.display = 'block';
+        if (gameId === 'mario') {
+          btnStrike.innerHTML = '🦘 LEAP / 🔥 FIREBALL <small>(Or flick phone up to leap!)</small>';
+        } else if (gameId === 'tennis') {
+          btnStrike.innerHTML = '🎾 SWING TENNIS RACKET <small>(Firm swing serves &amp; smashes!)</small>';
+        } else if (gameId === 'wizard') {
+          btnStrike.innerHTML = '🧙‍♂️ CAST MAGIC SPELL <small>(Wand flick casts fire &amp; lightning!)</small>';
+        } else if (gameId === 'balloon') {
+          btnStrike.innerHTML = '🎯 FLICK CARNIVAL DART <small>(Swing flick throws dart!)</small>';
+        } else if (gameId === 'boxing') {
+          btnStrike.innerHTML = '🥊 DIRECT PUNCH <small>(Thrust forward to punch alien!)</small>';
+        } else if (gameId === 'soccer') {
+          btnStrike.innerHTML = '⚽ POWER KICK / BLOCK <small>(Flick to strike penalty shot!)</small>';
+        } else {
+          btnStrike.innerHTML = '🗡️ PHYSICAL SWING / SLASH <small>(Or firmly swing your phone like a sword!)</small>';
+        }
+      }
+    }
+
+    // Highlight in list
+    document.querySelectorAll('.game-card-item').forEach(card => {
+      card.classList.toggle('active', card.dataset.game === gameId);
+      const btn = card.querySelector('.game-card-btn');
+      if (btn) btn.textContent = (card.dataset.game === gameId) ? 'ACTIVE' : 'PLAY ▶';
+    });
+
+    // Send selection over WebSocket to TV
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
+        type: 'select_game_mode',
+        mode: gameId
+      }));
+    }
+
+    vibrate(40);
+    showToast('✨ TV SWITCHED: ' + game.title);
+
+    // Auto-switch to Gamepad view for immediate action
+    switchTab('handheld');
+  }
+
+  function renderGamesList() {
+    if (!gamesScrollList) return;
+    gamesScrollList.innerHTML = '';
+    GAMES_CATALOG.forEach(game => {
+      const card = document.createElement('div');
+      card.className = 'game-card-item ' + (game.id === currentActiveGame ? 'active' : '');
+      card.dataset.game = game.id;
+      card.innerHTML = 
+        '<div class="game-card-icon">' + game.icon + '</div>' +
+        '<div class="game-card-main">' +
+          '<div class="game-card-title-row">' +
+            '<span class="game-card-title">' + game.title + '</span>' +
+            '<span class="game-badge">' + game.badge + '</span>' +
+          '</div>' +
+          '<p class="game-card-desc">' + game.desc + '</p>' +
+        '</div>' +
+        '<div class="game-card-action">' +
+          '<button class="game-card-btn">' + (game.id === currentActiveGame ? 'ACTIVE' : 'PLAY ▶') + '</button>' +
+        '</div>';
+      card.addEventListener('click', () => {
+        selectGame(game.id);
+      });
+      gamesScrollList.appendChild(card);
+    });
+  }
+  renderGamesList();
 
   function sendModeSelect(modeName) {
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -292,8 +430,33 @@
     const dt = now - lastMotionSendTime;
     const angleDiff = Math.abs(filteredGamma - lastSentGamma);
 
+    // High Precision Non-linear Tilt Mapping:
+    // Deadzone (1.2 deg) ignores natural micro-tremors.
+    // Exponential power curve (1.15) grants hair-fine control around center,
+    // reaching full deflection naturally at comfortable 26 deg wrist tilt.
+    const deadzone = 1.2;
+    const maxAngle = 26.0;
+    let normTilt = 0;
+    const absGamma = Math.abs(filteredGamma);
+    if (absGamma > deadzone) {
+      const sign = filteredGamma < 0 ? -1 : 1;
+      const eff = Math.min(1.0, (absGamma - deadzone) / (maxAngle - deadzone));
+      normTilt = sign * Math.pow(eff, 1.15);
+    }
+
+    // Real-time HUD feedback
+    if (steeringIndicator) {
+      const pct = Math.max(5, Math.min(95, 50 + (normTilt * 44)));
+      steeringIndicator.style.left = pct + '%';
+    }
+    if (steeringAngleText) {
+      const deg = Math.round(filteredGamma);
+      const dir = deg > 1 ? '▶ RIGHT' : (deg < -1 ? '◀ LEFT' : 'LEVEL');
+      steeringAngleText.textContent = deg + '° (' + dir + ')';
+    }
+
     // Send at ~60Hz on movement, or at least every 50ms as a heartbeat when held stationary
-    if (angleDiff > 0.3 || (forceHeartbeat && dt > 16) || dt > 50) {
+    if (angleDiff > 0.22 || (forceHeartbeat && dt > 16) || dt > 50) {
       lastMotionSendTime = now;
       lastSentGamma = filteredGamma;
       packetsSent++;
@@ -304,7 +467,7 @@
           type: 'motion',
           gamma: filteredGamma,
           beta: filteredBeta,
-          tiltX: Math.max(-1, Math.min(1, filteredGamma / 14.0)),
+          tiltX: normTilt,
           bladeAngle: -filteredGamma,
           accelMag: lastMagnitude,
           latency: currentLatency
@@ -346,10 +509,11 @@
 
     if (invertDirection) baseSteer = -baseSteer;
 
-    const steerDiff = Math.abs(baseSteer - filteredGamma);
-    const alpha = steerDiff > 6 ? 0.8 : 0.4;
-    filteredGamma = filteredGamma * (1 - alpha) + baseSteer * alpha;
-    filteredBeta = filteredBeta * 0.7 + unadjustedBeta * 0.3;
+    const steerDiff = baseSteer - filteredGamma;
+    // Continuous velocity-weighted adaptive smoothing filter (prevents abrupt jerky snaps)
+    const alpha = Math.min(0.92, Math.max(0.48, 0.52 + Math.abs(steerDiff) * 0.04));
+    filteredGamma += steerDiff * alpha;
+    filteredBeta = filteredBeta * 0.75 + unadjustedBeta * 0.25;
 
     if (phone3D) {
       phone3D.style.transform = `rotateZ(${-filteredGamma * 0.8}deg) rotateX(${filteredBeta * 0.5}deg)`;
@@ -400,8 +564,10 @@
     }
 
     // Highly responsive strike condition:
-    // Either pure linear acceleration > 8.5 m/s² OR total G > 1.48 OR jerk > 18
-    const isSwing = (linearMag > 8.5) || (totalMag > 1.48) || (totalJerk > 18);
+    // Combines linear acceleration energy with peak directional jerk
+    const jerkMag = totalJerk;
+    const accelEnergy = linearMag > 0 ? linearMag : Math.abs(totalMag - 1.0) * 9.80665;
+    const isSwing = (accelEnergy > 9.2 && jerkMag > 13) || (accelEnergy > 13.5) || (totalMag > 1.8 && jerkMag > 11);
 
     if (isSwing && (now - lastSwingTime > 180)) {
       lastSwingTime = now;
@@ -1250,6 +1416,61 @@
         key: key
       }));
     }
+  }
+
+  // Kart & Boxing Controls
+  if (btnKartNitro) {
+    btnKartNitro.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      vibrate(50);
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'key_press', key: 'up', state: true }));
+        ws.send(JSON.stringify({ type: 'motion', isBoost: true, boost: true }));
+      }
+    });
+    btnKartNitro.addEventListener('pointerup', (e) => {
+      e.preventDefault();
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'key_press', key: 'up', state: false }));
+        ws.send(JSON.stringify({ type: 'motion', isBoost: false, boost: false }));
+      }
+    });
+  }
+
+  if (btnKartDrift) {
+    btnKartDrift.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      vibrate(40);
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'key_press', key: 'down', state: true }));
+      }
+    });
+    btnKartDrift.addEventListener('pointerup', (e) => {
+      e.preventDefault();
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'key_press', key: 'down', state: false }));
+      }
+    });
+  }
+
+  if (btnBoxPunchLeft) {
+    btnBoxPunchLeft.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      vibrate(50);
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'punch', hand: 'left', force: 1.0 }));
+      }
+    });
+  }
+
+  if (btnBoxPunchRight) {
+    btnBoxPunchRight.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      vibrate(50);
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'punch', hand: 'right', force: 1.0 }));
+      }
+    });
   }
 
   const btnMarioL = document.getElementById('btn-mario-left');

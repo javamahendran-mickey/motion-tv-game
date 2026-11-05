@@ -456,3 +456,322 @@ body {
   font-size: 12px;
   cursor: pointer;
 }
+
+
+/* ── FLOATING TOAST NOTIFICATION ── */
+.toast-notify {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: rgba(10, 16, 30, 0.96);
+  border: 1.5px solid var(--accent-cyan);
+  box-shadow: 0 8px 25px rgba(0, 240, 255, 0.4);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast-notify.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ── ACTIVE GAME BANNER ON GAMEPAD ── */
+.active-game-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(20, 26, 48, 0.9), rgba(15, 20, 38, 0.9));
+  border: 1.5px solid rgba(0, 240, 255, 0.4);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.active-game-banner:active {
+  transform: scale(0.98);
+  border-color: var(--accent-cyan);
+}
+
+.banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.game-emoji {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.banner-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.banner-sub {
+  font-size: 0.65rem;
+  color: var(--accent-cyan);
+  font-weight: 800;
+  letter-spacing: 0.6px;
+}
+
+.banner-name {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+.banner-arrow {
+  background: rgba(0, 240, 255, 0.12);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* ── REAL-TIME STEERING & TILT HUD ── */
+.steering-hud {
+  background: rgba(14, 18, 32, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.steering-track {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: visible;
+  margin-bottom: 6px;
+}
+
+.steering-track::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.steering-indicator {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 10px var(--accent-cyan);
+  transition: left 0.05s linear;
+}
+
+.steering-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+#steering-angle-text {
+  color: var(--accent-cyan);
+  font-weight: 900;
+}
+
+/* ── KART & BOXING CONTROLS ── */
+.kart-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 10px;
+  border-radius: 16px;
+  border: none;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: all 0.1s ease;
+}
+
+.kart-btn:active {
+  transform: scale(0.96);
+}
+
+.nitro-btn {
+  background: linear-gradient(135deg, #ff0077, #ff5500);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+
+.drift-btn {
+  background: linear-gradient(135deg, #00f0ff, #0066ff);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ── VIEW 2: GAMES LIST ── */
+#view-games {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  height: calc(100vh - 120px);
+}
+
+#view-games.active {
+  display: flex;
+}
+
+.games-list-header {
+  text-align: center;
+  padding: 6px 0 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.games-list-header h2 {
+  font-size: 1.25rem;
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.games-list-header p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.games-scroll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 40px;
+}
+
+.game-card-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(19, 23, 40, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.09);
+  border-radius: 16px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  position: relative;
+}
+
+.game-card-item:active {
+  transform: scale(0.98);
+}
+
+.game-card-item.active {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.08);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+}
+
+.game-card-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+  min-width: 44px;
+  text-align: center;
+}
+
+.game-card-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.game-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.game-card-title {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+.game-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+.game-card-item.active .game-badge {
+  background: rgba(0, 255, 136, 0.15);
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+}
+
+.game-card-desc {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+.game-card-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.game-card-btn {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 102, 255, 0.3));
+  border: 1.5px solid var(--accent-cyan);
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.game-card-item.active .game-card-btn {
+  background: var(--accent-green);
+  color: #000;
+  border-color: var(--accent-green);
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.5);
+}
