@@ -199,6 +199,38 @@ curl "https://motion-tv-game.onrender.com/api/action?action=jump&room=TV-5048"
 | **Mobile Camera Access Denied** | Chrome requires a Secure Origin (HTTPS) to access `getUserMedia`. | Integrated Cloudflare Tunnel locally (`*.trycloudflare.com`) and deployed to Render with permanent SSL (`https://`). |
 | **TV Wi-Fi Sleep** | Smart TV powers off Wi-Fi after ~5 min idle. | Automated reconnect loop in `push_to_tv.bat` and added `FLAG_KEEP_SCREEN_ON` in the TV app. |
 | **Git Push 403 on GitHub** | Windows Credential Manager cached different user account. | Added collaborator access on GitHub and mapped remote URL explicitly. |
+| **Motion Sensor Jitter & Clip** | Fixed 14° linear clipping and step filter caused twitchy or sluggish tilt. | Replaced with velocity-adaptive filter ($\alpha \in [0.48, 0.92]$), $1.2^\circ$ deadzone, and non-linear power curve up to $26^\circ$. |
+| **Game Browsing on Mobile** | Players had to navigate TV menus with physical remotes. | Added full vertical Games List on the phone controller with 1-tap TV switching across 11 games. |
+| **Intrusive Sensor Permission Popups** | Browser permission checks nagged player on load. | Replaced with silent auto-initialization on first touch/click without modal prompts. |
+
+---
+
+## 🕹️ Full 11-Game Suite Catalog
+
+| Game | Mode | Category | Controls & Motion Feedback |
+| :--- | :--- | :--- | :--- |
+| **Super Mario Motion** | `mario` | Platformer | Tilt phone left/right or use D-Pad to run; swing or tap to jump and fire! |
+| **Fruit Ninja Motion** | `fruit` | Sword Slicer | Slice flying fruit with physical sword swings using your phone's IMU. |
+| **Neon Saber Rhythm** | `saber` | Rhythm Blade | Slice incoming neon beat cubes to the rhythm of high-energy cyber tracks. |
+| **Neon Kart Racer** | `kart` | Tilt Steering | Turn phone like a steering wheel to steer, drift & hit turbo nitro. |
+| **Galaxy Rider** | `dodge` | Space Dodger | Steer starship through asteroid storms, avoid mines, and collect gems. |
+| **Wii Grand Slam Tennis**| `tennis` | Sports Smash | Serve, volley, and smash tennis balls with natural racket swings. |
+| **Wizard Spell Duel** | `wizard` | Magic Wand | Flick your wand to cast explosive fire and lightning spells. |
+| **Balloon Pop Carnival** | `balloon` | Darts Arcade | Aim and flick darts to pop vibrant flying carnival prize balloons. |
+| **Monster Alien Bonk** | `boxing` | Punch Whack | Whack pesky space aliens as they pop up with rapid punches. |
+| **Soccer Penalty Striker**| `soccer` | Penalty Kick | Curve kicks into the goal net or block shots as goalkeeper. |
+| **ROMP 17-in-1 Suite** | `romp` | Full-Body Fitness | 17 motion games: Jump, Duck, Pulse, Goalie, Slice, Sprint, Forge & more. |
+
+---
+
+## 📱 High-Precision Motion Sensor Engine
+
+The mobile motion sensor engine (`public/phone.js` and `public/tv.js`) delivers console-grade responsiveness:
+* **Micro-Deadzone ($1.2^\circ$)**: Filters out natural hand micro-tremors without introducing dead feeling.
+* **Progressive Non-Linear Steering Curve**: $E = \text{sign}(\theta) \times (|\theta - 1.2| / 24.8)^{1.15}$ provides pixel-level fine aiming at small angles while allowing full steering deflection at a comfortable $26^\circ$ wrist tilt.
+* **Continuous Velocity-Adaptive Smoothing**: Dynamically scales the low-pass filter factor $\alpha \in [0.48, 0.92]$ based on angular velocity $\Delta \theta$, eliminating sluggishness during rapid turns and preventing jitter when still.
+* **3D Vector Jerk Strike Detection**: Combines pure linear acceleration with 3D jerk $\Delta a / \Delta t$ to distinguish deliberate sword strikes, racket swings, and punches from casual phone motion.
+* **Live Steering HUD**: Real-time visual track and degree readout right on the controller so the player always knows their tilt angle and neutral balance point.
 
 ---
 
